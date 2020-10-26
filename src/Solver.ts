@@ -8,6 +8,7 @@ export default class Solver extends Nonogram {
   worker: Worker = new SolverWorker()
 
   delay: number
+  step: Boolean
   handleSuccess: (time: number) => void
   handleError: (e: Error) => void
   isBusy: boolean
@@ -25,6 +26,7 @@ export default class Solver extends Nonogram {
     {
       theme = {},
       delay = 50,
+      step = false,
       onSuccess = () => { },
       onError = () => { },
     } = {},
@@ -36,6 +38,7 @@ export default class Solver extends Nonogram {
     Object.assign(this.theme, theme)
 
     this.delay = delay
+    this.step = step
     this.handleSuccess = onSuccess
     this.handleError = onError
 
@@ -129,9 +132,19 @@ export default class Solver extends Nonogram {
       this.print()
     }
     this.worker.postMessage({
-      delay: this.delay,
-      grid: this.grid,
-      hints: this.hints,
+      action: 'solve',
+      data: {
+        delay: this.delay,
+        step: this.step,
+        grid: this.grid,
+        hints: this.hints,
+      },
+    })
+  }
+
+  runStep() {
+    this.worker.postMessage({
+      action: 'step',
     })
   }
 

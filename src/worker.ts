@@ -35,6 +35,7 @@ class Solver {
   currentHints: LineOfHints
   currentLine: status[]
   delay: number
+  step: Boolean
   message: SolverMessage
   possibleBlanks: {
     row: number[][][]
@@ -44,6 +45,7 @@ class Solver {
   constructor(data: any) {
     this.hints = data.hints
     this.delay = data.delay
+    this.step = data.step
     this.grid = data.grid
 
     this.scanner = {
@@ -96,7 +98,7 @@ class Solver {
   scan = () => {
     if (!this.updateScanner()) return
 
-    if (this.delay) {
+    if (this.delay || this.step) {
       this.message = {
         type: 'update',
         grid: this.grid,
@@ -133,7 +135,9 @@ class Solver {
       postMessage(this.message)
       return
     }
-    if (this.delay) {
+    if (this.step) {
+      // none
+    } else if (this.delay) {
       setTimeout(this.scan, this.delay)
     } else {
       this.scan()
@@ -253,6 +257,11 @@ class Solver {
   }
 }
 
-onmessage = ({ data }) => {
-  new Solver(data)
+let s
+onmessage = (msg) => {
+  if (msg.data.action == 'solve') {
+    s = new Solver(msg.data.data)
+  } else if (msg.data.action == 'step') {
+    s.scan()
+  }
 }
